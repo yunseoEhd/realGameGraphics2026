@@ -1,6 +1,7 @@
-
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
+using TMPro;
 
 public class PlayerController : MonoBehaviour
 {
@@ -10,6 +11,7 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed = 3f;
     public Vector3 startPosition;
     public Transform visual;
+
     private Vector2 moveInput;
     public float jumpPower = 8f;
     private Rigidbody2D rb;
@@ -19,6 +21,12 @@ public class PlayerController : MonoBehaviour
     public int lives = 3;
     private bool isGameOver = false;
 
+    // 목숨 텍스트
+    public TMP_Text livesText;
+
+    // 다음 씬 이름
+    public string nextSceneName = "Stage2";
+
     // 점프 중 캐릭터 크기와 좌우 방향
     public Vector2 airScale = new Vector2(0.8f, 1.2f);
     private float facing = 1f;
@@ -27,6 +35,8 @@ public class PlayerController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         transform.position = startPosition;
+
+        UpdateLivesText();
 
         Debug.Log(playerName + " 시작. 체력 " + hp);
         Debug.Log("피격 후 체력 " + (hp - 30));
@@ -47,11 +57,20 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    void UpdateLivesText()
+    {
+        if (livesText != null)
+        {
+            livesText.text = "LIFE " + lives;
+        }
+    }
+
     void OnJump(InputValue value)
     {
         if (value.isPressed && isGrounded && !isGameOver)
         {
             Debug.Log("점프!");
+
             rb.linearVelocity = new Vector2(
                 rb.linearVelocity.x, jumpPower);
         }
@@ -81,37 +100,51 @@ public class PlayerController : MonoBehaviour
             Vector3.right * moveInput.x
             * moveSpeed * Time.deltaTime);
 
-        // 낙사 및 목숨 처리
+        // 낙사 처리
         if (transform.position.y < fallLimit)
         {
-            lives--;
+            LoseLife();
+        }
 
-            transform.position = startPosition;
-            rb.linearVelocity = Vector2.zero;
-            isGrounded = false;
-
-            Debug.Log("낙사. 남은 목숨 " + lives);
-
-            if (lives <= 0)
+        // 캐릭터 크기와 방향
+        if (visual != null)
+        {
+            if (isGrounded)
             {
-                isGameOver = true;
-                moveInput = Vector2.zero;
-                Debug.Log("게임 오버");
+                visual.localScale = new Vector3(
+                    facing, 1f, 1f);
+            }
+            else
+            {
+                visual.localScale = new Vector3(
+                    facing * airScale.x,
+                    airScale.y,
+                    1f);
             }
         }
+    }
 
-        // 점프 중에는 길쭉하게, 착지하면 원래 크기로
-        if (isGrounded)
+    // 목숨 감소 및 낙사 후 복귀
+    void LoseLife()
+    {
+        if (isGameOver) return;
+
+        lives--;
+
+        UpdateLivesText();
+
+        transform.position = startPosition;
+        rb.linearVelocity = Vector2.zero;
+        isGrounded = false;
+
+        Debug.Log("낙사. 남은 목숨 " + lives);
+
+        if (lives <= 0)
         {
-            visual.localScale = new Vector3(
-                facing, 1f, 1f);
-        }
-        else
-        {
-            visual.localScale = new Vector3(
-                facing * airScale.x,
-                airScale.y,
-                1f);
+            isGameOver = true;
+            moveInput = Vector2.zero;
+
+            Debug.Log("게임 오버");
         }
     }
 
@@ -128,6 +161,19 @@ public class PlayerController : MonoBehaviour
         if (collision.gameObject.CompareTag("Ground"))
         {
             isGrounded = false;
+        }
+    }
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (other.CompareTag("Goal"))
+        {
+            Debug.Log("골인!");
+            SceneManager.LoadScene(nextSceneName);
+        }
+        else if (other.CompareTag("Trap"))
+        {
+            LoseLife();
         }
     }
 }
