@@ -21,14 +21,11 @@ public class PlayerController : MonoBehaviour
     public int lives = 3;
     private bool isGameOver = false;
 
-    // 목숨 텍스트
     public TMP_Text livesText;
-
-    // 다음 씬 이름
     public string nextSceneName = "Stage2";
 
-    // 점프 중 캐릭터 크기와 좌우 방향
     public Vector2 airScale = new Vector2(0.8f, 1.2f);
+    public GameObject gameOverPanel;
     private float facing = 1f;
 
     void Start()
@@ -100,13 +97,11 @@ public class PlayerController : MonoBehaviour
             Vector3.right * moveInput.x
             * moveSpeed * Time.deltaTime);
 
-        // 낙사 처리
         if (transform.position.y < fallLimit)
         {
             LoseLife();
         }
 
-        // 캐릭터 크기와 방향
         if (visual != null)
         {
             if (isGrounded)
@@ -124,7 +119,6 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    // 목숨 감소 및 낙사 후 복귀
     void LoseLife()
     {
         if (isGameOver) return;
@@ -144,7 +138,7 @@ public class PlayerController : MonoBehaviour
             isGameOver = true;
             moveInput = Vector2.zero;
 
-            Debug.Log("게임 오버");
+            gameOverPanel.SetActive(true);
         }
     }
 
@@ -153,14 +147,6 @@ public class PlayerController : MonoBehaviour
         if (collision.gameObject.CompareTag("Ground"))
         {
             isGrounded = true;
-        }
-    }
-
-    void OnCollisionExit2D(Collision2D collision)
-    {
-        if (collision.gameObject.CompareTag("Ground"))
-        {
-            isGrounded = false;
         }
     }
 
@@ -174,6 +160,14 @@ public class PlayerController : MonoBehaviour
         else if (other.CompareTag("Trap"))
         {
             LoseLife();
+        }
+    }
+
+    void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("Ground"))
+        {
+            isGrounded = false;
         }
     }
 }
