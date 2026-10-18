@@ -2163,7 +2163,7 @@ Transform:
   m_GameObject: {fileID: 1161630707}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1.53, y: 0.13, z: 0}
+  m_LocalPosition: {x: 1.53, y: 1.271, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2832,7 +2832,7 @@ MonoBehaviour:
   fallLimit: -10
   lives: 3
   livesText: {fileID: 665406039}
-  nextSceneName: Stage2
+  nextSceneName: Stage3
   airScale: {x: 0.8, y: 1.2}
   gameOverPanel: {fileID: 987341947}
 --- !u!1 &1433410464
