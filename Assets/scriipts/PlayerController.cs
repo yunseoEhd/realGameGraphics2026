@@ -1,3 +1,4 @@
+
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -24,16 +25,30 @@ public class PlayerController : MonoBehaviour
     public TMP_Text livesText;
     public string nextSceneName = "Stage2";
 
-    public Vector2 airScale = new Vector2(0.8f, 1.2f);
+    public Vector2 airScale = new Vector2(0.95f, 1.05f);
     public GameObject gameOverPanel;
+
     private float facing = 1f;
+
+    // 이미지의 원래 크기를 저장
+    private Vector3 originalVisualScale;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         transform.position = startPosition;
 
+        if (visual != null)
+        {
+            originalVisualScale = visual.localScale;
+        }
+
         UpdateLivesText();
+
+        if (gameOverPanel != null)
+        {
+            gameOverPanel.SetActive(false);
+        }
 
         Debug.Log(playerName + " 시작. 체력 " + hp);
         Debug.Log("피격 후 체력 " + (hp - 30));
@@ -102,21 +117,27 @@ public class PlayerController : MonoBehaviour
             LoseLife();
         }
 
-        if (visual != null)
+        UpdateVisual();
+    }
+
+    void UpdateVisual()
+    {
+        if (visual == null) return;
+
+        float scaleX = Mathf.Abs(originalVisualScale.x) * facing;
+        float scaleY = originalVisualScale.y;
+
+        if (!isGrounded)
         {
-            if (isGrounded)
-            {
-                visual.localScale = new Vector3(
-                    facing, 1f, 1f);
-            }
-            else
-            {
-                visual.localScale = new Vector3(
-                    facing * airScale.x,
-                    airScale.y,
-                    1f);
-            }
+            scaleX *= airScale.x;
+            scaleY *= airScale.y;
         }
+
+        visual.localScale = new Vector3(
+            scaleX,
+            scaleY,
+            originalVisualScale.z
+        );
     }
 
     void LoseLife()
@@ -124,7 +145,6 @@ public class PlayerController : MonoBehaviour
         if (isGameOver) return;
 
         lives--;
-
         UpdateLivesText();
 
         transform.position = startPosition;
@@ -138,7 +158,10 @@ public class PlayerController : MonoBehaviour
             isGameOver = true;
             moveInput = Vector2.zero;
 
-            gameOverPanel.SetActive(true);
+            if (gameOverPanel != null)
+            {
+                gameOverPanel.SetActive(true);
+            }
         }
     }
 
